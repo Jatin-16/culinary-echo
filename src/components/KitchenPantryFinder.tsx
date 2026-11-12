@@ -32,6 +32,7 @@ export const KitchenPantryFinder: React.FC<KitchenPantryFinderProps> = ({
   const [activeClusterId, setActiveClusterId] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeNiche, setActiveNiche] = useState<string | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Filter pantry items by search query and cluster
   const filteredItems = useMemo(() => {
@@ -167,94 +168,142 @@ export const KitchenPantryFinder: React.FC<KitchenPantryFinderProps> = ({
         })}
       </div>
 
-      {/* Ingredient Search & Quick Filter */}
+      {/* Searchable Ingredient Dropdown */}
       <div className="relative">
-        <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          placeholder="Search by ingredient or Hindi name (e.g. Aloo, Paneer, Dahi, Ghee)..."
-          className="w-full pl-9 pr-8 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-900 focus:bg-white transition-all"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
 
-      {/* Interactive Ingredient Grid */}
-      {filteredItems.length === 0 ? (
-        <div className="col-span-full p-8 bg-white rounded-2xl border border-stone-200 text-center space-y-3">
-          <Search className="w-8 h-8 text-stone-300 mx-auto" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => {
+              setSearchQuery(e.target.value);
+              setIsDropdownOpen(true);
+            }}
+            onFocus={() => setIsDropdownOpen(true)}
+            onKeyDown={e => {
+              if (e.key === 'Escape') {
+                setIsDropdownOpen(false);
+              }
+            }}
+            aria-label="Search pantry ingredients"
+            aria-expanded={isDropdownOpen}
+            placeholder={`Search ${activeClusterId === 'all' ? 'all ingredients' : PANTRY_CLUSTERS.find(c => c.id === activeClusterId)?.name || 'ingredients'}...`}
+            className="w-full pl-9 pr-20 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-amber-900 focus:bg-white transition-all"
+          />
 
-          <h3 className="text-sm font-semibold text-stone-800">
-            No ingredients found
-          </h3>
-
-          <p className="text-xs text-stone-500 max-w-sm mx-auto">
-            We couldn't find any ingredients matching "{searchQuery}".
-            Try another ingredient name or search in Hindi.
-          </p>
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setIsDropdownOpen(true);
+              }}
+              className="absolute right-11 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
+              aria-label="Clear ingredient search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
 
           <button
             type="button"
-            onClick={() => setSearchQuery('')}
-            className="px-4 py-2 bg-stone-900 text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition-colors"
+            onClick={() => setIsDropdownOpen(prev => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700"
+            aria-label={isDropdownOpen ? 'Close ingredient dropdown' : 'Open ingredient dropdown'}
           >
-            Clear search
+            <span className="text-xs font-semibold">
+              {isDropdownOpen ? 'Close' : 'Select'}
+            </span>
           </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-          {filteredItems.map(item => {
-            const isSelected = selectedItems.has(item.name);
 
-            return (
+        {isDropdownOpen && (
+          <div className="absolute left-0 right-0 top-full mt-2 z-30 bg-white border border-stone-200 rounded-2xl shadow-xl overflow-hidden">
+
+            <div className="px-4 py-2.5 bg-stone-50 border-b border-stone-100 flex items-center justify-between">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500">
+                {activeClusterId === 'all'
+                  ? 'All Ingredients'
+                  : PANTRY_CLUSTERS.find(c => c.id === activeClusterId)?.name}
+              </span>
+
+              <span className="text-[10px] text-stone-400">
+                {filteredItems.length} available
+              </span>
+            </div>
+
+            <div className="max-h-64 overflow-y-auto overscroll-contain">
+              {filteredItems.length === 0 ? (
+                <div className="p-6 text-center">
+                  <Search className="w-6 h-6 text-stone-300 mx-auto mb-2" />
+
+                  <p className="text-sm font-semibold text-stone-700">
+                    No ingredients found
+                  </p>
+
+                  <p className="text-xs text-stone-400 mt-1">
+                    Try another ingredient or select a different category.
+                  </p>
+                </div>
+              ) : (
+                filteredItems.map(item => {
+                  const isSelected = selectedItems.has(item.name);
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onMouseDown={e => e.preventDefault()}
+                      onClick={() => onToggleItem(item.name)}
+                      className={`w-full px-4 py-3 flex items-center justify-between gap-3 text-left border-b border-stone-100 last:border-0 transition-colors ${
+                        isSelected
+                          ? 'bg-emerald-100 border-l-4 border-emerald-500'
+                          : 'bg-white border-l-4 border-transparent hover:bg-stone-50'
+                      }`}
+                      aria-pressed={isSelected}
+                    >
+                      <div className="min-w-0">
+                        <p className={`text-sm font-semibold ${
+                          isSelected ? 'text-emerald-900' : 'text-stone-800'
+                        }`}>
+                          {item.name}
+                        </p>
+
+                        <p className="text-[11px] text-stone-400 mt-0.5">
+                          {item.hindiName} · {item.flavorNotes.split(',')[0]}
+                        </p>
+                      </div>
+
+                      <span className={`w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-xs ${
+                        isSelected
+                          ? 'bg-emerald-600 text-white'
+                          : 'border border-stone-300 text-stone-400'
+                      }`}>
+                        {isSelected ? '✓' : '+'}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="px-4 py-2 bg-stone-50 border-t border-stone-100 flex items-center justify-between">
+              <span className="text-[10px] text-stone-500">
+                {selectedItems.size} ingredients selected
+              </span>
+
               <button
-                key={item.id}
                 type="button"
-                onClick={() => onToggleItem(item.name)}
-                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[72px] relative group ${
-                  isSelected
-                    ? 'border-emerald-600 bg-emerald-50/80 text-emerald-950 shadow-2xs'
-                    : 'border-stone-200 hover:border-amber-700/60 bg-white hover:bg-amber-50/20 text-stone-800'
-                }`}
+                onClick={() => setIsDropdownOpen(false)}
+                className="text-[11px] font-semibold text-amber-900 hover:text-amber-700"
               >
-                <div className="flex items-start justify-between gap-1 w-full">
-                  <span className="font-semibold text-xs leading-snug line-clamp-2">
-                    {item.name}
-                  </span>
-
-                  <span
-                    className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 mt-0.5 transition-colors ${
-                      isSelected
-                        ? 'bg-emerald-600 text-white font-bold'
-                        : 'border border-stone-300 text-stone-300 group-hover:border-stone-400'
-                    }`}
-                  >
-                    {isSelected ? '✓' : '+'}
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-stone-500 mt-1">
-                  <span className="font-medium text-amber-900/80">
-                    {item.hindiName}
-                  </span>
-
-                  <span className="text-[10px] text-stone-400 truncate max-w-[80px]">
-                    {item.flavorNotes.split(',')[0]}
-                  </span>
-                </div>
+                Done
               </button>
-            );
-          })}
-        </div>
-      )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Selected Items Counter Bar */}
       <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
