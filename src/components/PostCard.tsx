@@ -36,9 +36,9 @@ export const PostCard: React.FC<PostCardProps> = ({
   }, [post.ingredients]);
 
   return (
-    <article className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between">
+    <article className="bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col h-full min-w-0">
       {/* Top Image Section */}
-      <div className="relative aspect-[4/3] bg-stone-100 overflow-hidden group">
+      <div className="relative aspect-[4/3] sm:aspect-[16/10] bg-stone-100 overflow-hidden group">
         <img
           src={post.image}
           alt={post.title}
@@ -121,7 +121,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {/* Structured Sensory Triad (Unboxed text with structured layout) */}
-        <div className="p-3 bg-stone-50 rounded-xl border border-stone-200/70 grid grid-cols-3 gap-2 text-center text-xs">
+        <div className="p-2.5 sm:p-3 bg-stone-50 rounded-xl border border-stone-200/70 grid grid-cols-3 gap-1.5 sm:gap-2 text-center text-xs min-w-0">
           <div>
             <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400 block">
               Aroma
@@ -154,12 +154,12 @@ export const PostCard: React.FC<PostCardProps> = ({
             <span>Ingredients & Aromatics</span>
             <span className="text-[10px] text-amber-900">Tap to inspect scent</span>
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 min-w-0">
             {post.ingredients.map(ing => (
               <button
                 key={ing}
                 onClick={() => onInspectIngredient(ing)}
-                className="text-[11px] bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-lg transition-colors font-medium text-left"
+                className="text-[11px] bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-lg transition-colors font-medium text-left max-w-full break-words"
                 title={`Inspect FlavorDB volatile chemistry for ${ing}`}
               >
                 {ing}
@@ -262,7 +262,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2 text-xs">
+        <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2 text-xs min-w-0">
           <div className="flex items-center gap-3">
             <button
               onClick={() => onLike(post.id)}
@@ -294,7 +294,7 @@ export const PostCard: React.FC<PostCardProps> = ({
 
           <button
             onClick={() => onOpenRecreation(post)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-amber-900 hover:bg-stone-900 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 bg-amber-900 hover:bg-stone-900 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer whitespace-nowrap shrink-0"
           >
             <ChefHat className="w-3.5 h-3.5" />
             <span>Cook & Adapt</span>
