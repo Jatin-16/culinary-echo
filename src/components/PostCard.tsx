@@ -60,7 +60,12 @@ export const PostCard: React.FC<PostCardProps> = ({
               : 'bg-white/90 hover:bg-white text-stone-700 hover:text-stone-950 shadow-xs'
           }`}
           title={post.saved ? 'Saved in Personal Cabinet' : 'Save to Personal Cabinet'}
-          aria-label="Save contribution"
+          aria-label={
+            post.saved
+              ? 'Remove from Personal Cabinet'
+              : 'Save to Personal Cabinet'
+          }
+          aria-pressed={post.saved} 
         >
           <Bookmark className={`w-3.5 h-3.5 ${post.saved ? 'fill-current' : ''}`} />
         </button>
@@ -262,10 +267,17 @@ export const PostCard: React.FC<PostCardProps> = ({
             <button
               onClick={() => onLike(post.id)}
               className="flex items-center gap-1.5 text-stone-500 hover:text-rose-600 transition-colors p-1 cursor-pointer"
-              aria-label="Appreciate contribution"
+              aria-label={post.isLiked ? 'Unlike contribution' : 'Like contribution'}
+              aria-pressed={Boolean(post.isLiked)}
             >
-              <Heart className={`w-4 h-4 ${post.likes > 0 ? 'text-rose-600 fill-rose-600' : ''}`} />
-              <span className="font-mono text-xs tabular-nums text-stone-700">{post.likes}</span>
+            <Heart
+              className={`w-4 h-4 transition-colors ${
+                post.isLiked
+                  ? 'text-rose-600 fill-rose-600'
+                  : 'text-stone-500'
+              }`}
+            />              
+            <span className="font-mono text-xs tabular-nums text-stone-700">{post.likes}</span>
             </button>
 
             {isVariation && (

@@ -65,6 +65,7 @@ export interface LivingContribution {
   equipmentConstraint?: string;
   timeConstraint?: string;
   likes: number;
+  isLiked?: boolean;
   saved: boolean;
   createdAt: string;
 }

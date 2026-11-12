@@ -11,7 +11,6 @@ import { PostCard } from './PostCard';
 
 interface PersonalCabinetViewProps {
   posts: LivingContribution[];
-  savedPostIds: Set<string>;
   onLike: (id: string) => void;
   onToggleSave: (id: string) => void;
   onOpenRecreation: (post: LivingContribution) => void;
@@ -22,7 +21,6 @@ interface PersonalCabinetViewProps {
 
 export const PersonalCabinetView: React.FC<PersonalCabinetViewProps> = ({
   posts,
-  savedPostIds,
   onLike,
   onToggleSave,
   onOpenRecreation,
@@ -31,8 +29,8 @@ export const PersonalCabinetView: React.FC<PersonalCabinetViewProps> = ({
   onExploreFeed
 }) => {
   const savedPosts = useMemo(() => {
-    return posts.filter(p => savedPostIds.has(p.id));
-  }, [posts, savedPostIds]);
+    return posts.filter(p => p.saved);
+  }, [posts]);
 
   // Compute voluntary taste profile from saved items
   const tasteProfile = useMemo(() => {

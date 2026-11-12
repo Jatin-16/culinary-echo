@@ -40,14 +40,10 @@ import { Sparkles, GitBranch, ChefHat, Check, Heart, BookOpen, Compass, Flame, S
 export default function App() {
   const [activeTab, setActiveTab] = useState<'feed' | 'graph' | 'lineage' | 'circles' | 'cabinet'>('feed');
   const [posts, setPosts] = useState<LivingContribution[]>(INITIAL_POSTS);
+  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(
+  () => new Set()
+    );
   const [communities, setCommunities] = useState<CommunityCircle[]>(COMMUNITIES);
-  const [savedPostIds, setSavedPostIds] = useState<Set<string>>(() => {
-    const initialSaved = new Set<string>();
-    INITIAL_POSTS.forEach(p => {
-      if (p.saved) initialSaved.add(p.id);
-    });
-    return initialSaved;
-  });
 
   // User Kitchen Pantry selection
   const [userPantryItems, setUserPantryItems] = useState<Set<string>>(
@@ -88,34 +84,52 @@ export default function App() {
 
   // Actions
   const handleLike = (id: string) => {
+    const post = posts.find(p => p.id === id);
+    if (!post) return;
+
+    const isCurrentlyLiked = Boolean(post.isLiked);
+
     setPosts(prev =>
-      prev.map(p => {
-        if (p.id === id) {
-          const isLiked = p.likes % 2 === 1; // simple toggle demonstration
-          return { ...p, likes: p.likes + 1 };
-        }
-        return p;
-      })
-    );
-    showToast('Echoed appreciation for this food experience');
-  };
+      prev.map(p =>
+        p.id === id
+          ? {
+              ...p,
+              isLiked: !isCurrentlyLiked,
+              likes: Math.max(
+                0,
+                p.likes + (isCurrentlyLiked ? -1 : 1)
+              )
+            }
+          : p
+      )
+  );
+
+  showToast(
+    isCurrentlyLiked
+      ? 'Removed your appreciation'
+      : 'Echoed appreciation for this food experience'
+  );
+};
 
   const handleToggleSave = (id: string) => {
-    setSavedPostIds(prev => {
-      const next = new Set(prev);
-      const isCurrentlySaved = next.has(id);
-      if (isCurrentlySaved) {
-        next.delete(id);
-        showToast('Removed from Personal Cabinet');
-      } else {
-        next.add(id);
-        showToast('Saved to your Personal Cabinet');
-      }
-      return next;
-    });
+    const post = posts.find(p => p.id === id);
+    if (!post) return;
+
+    const isCurrentlySaved = post.saved;
+    const willBeSaved = !isCurrentlySaved;
 
     setPosts(prev =>
-      prev.map(p => (p.id === id ? { ...p, saved: !p.saved } : p))
+      prev.map(p =>
+        p.id === id
+          ? { ...p, saved: willBeSaved }
+          : p
+      )
+    );
+
+    showToast(
+      willBeSaved
+        ? 'Saved to your Personal Cabinet'
+        : 'Removed from Personal Cabinet'
     );
   };
 
@@ -245,7 +259,7 @@ export default function App() {
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         onOpenShareModal={handleOpenGeneralShare}
-        savedCount={savedPostIds.size}
+        savedCount={posts.filter(p => p.saved).length}
       />
 
       {/* Main Viewport Container */}
@@ -447,7 +461,6 @@ export default function App() {
         {activeTab === 'cabinet' && (
           <PersonalCabinetView
             posts={posts}
-            savedPostIds={savedPostIds}
             onLike={handleLike}
             onToggleSave={handleToggleSave}
             onOpenRecreation={handleOpenRecreation}
