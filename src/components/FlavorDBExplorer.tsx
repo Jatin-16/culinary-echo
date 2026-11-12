@@ -386,7 +386,7 @@ export const FlavorDBExplorer: React.FC<FlavorDBExplorerProps> = ({
                 Surprising Pairings That Work Wonders
               </h3>
               <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl leading-relaxed">
-                These ingredients sound like an unusual match, but computational gastronomy proves they share vital aroma bridges. Tap any card to test their chemistry!
+                These ingredients may seem like an unusual match. Explore their documented aroma connections and try a kitchen experiment to discover how they work together.
               </p>
             </div>
           </div>
@@ -402,8 +402,8 @@ export const FlavorDBExplorer: React.FC<FlavorDBExplorerProps> = ({
                     <span className="font-semibold text-amber-900 bg-amber-100/70 px-2 py-0.5 rounded-md">
                       {twin.badge}
                     </span>
-                    <span className="font-mono text-stone-600 font-bold tabular-nums">
-                      {twin.matchScore}% Synergy
+                    <span className="font-mono text-stone-500 font-medium">
+                      Culinary Discovery
                     </span>
                   </div>
 

@@ -43,7 +43,6 @@ export const AdaptiveRecreationModal: React.FC<AdaptiveRecreationModalProps> = (
   const recreationResult: RecreationResult = useMemo(() => {
     if (!dish) {
       return {
-        confidence: 0,
         targetGoal: 'whole',
         substitutions: [],
         tradeOffs: [],
@@ -279,22 +278,15 @@ export const AdaptiveRecreationModal: React.FC<AdaptiveRecreationModalProps> = (
                 <Sparkles className="w-4 h-4 text-amber-800" />
                 Evidence-Informed Pathway
               </h3>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
-                    recreationResult.confidence >= 75
-                      ? 'text-emerald-800 bg-emerald-50 border-emerald-200'
-                      : 'text-amber-800 bg-amber-50 border-amber-200'
-                  }`}
-                >
-                  Profile Retention: ~{recreationResult.confidence}%
-                </span>
+              <div className="text-[11px] font-semibold px-2.5 py-1 rounded-full border border-stone-200 bg-stone-100 text-stone-700">
+                Adaptation Details
               </div>
             </div>
 
-            {/* Scientific disclaimer as mandated by product vision */}
             <p className="text-[11px] text-stone-500 leading-relaxed italic bg-stone-50 p-2.5 rounded-xl border border-stone-150">
-              Note: This computational estimate is grounded in preserved aroma volatiles and cooking matrices; human perception varies, and results are honest explorations rather than guaranteed twins.
+              These suggestions are based on your selected ingredients,
+              equipment and time constraints. They are not a prediction
+              of how closely the recreated dish will taste like the original.
             </p>
 
             {/* Sourced Substitutions Breakdown */}

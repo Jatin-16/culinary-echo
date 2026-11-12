@@ -91,7 +91,6 @@ export interface SubstitutionResult {
 }
 
 export interface RecreationResult {
-  confidence: number;
   targetGoal: 'whole' | 'aroma' | 'flavour' | 'texture';
   substitutions: SubstitutionResult[];
   tradeOffs: string[];
@@ -121,7 +120,6 @@ export interface DishSensoryProfile {
     brightCitrus: number;
     earthy: number;
   };
-  harmonyScore: number;
   dominantBridge: string;
   sharedVolatilesFound: string[];
   funTwist: string;
@@ -131,7 +129,6 @@ export interface SecretPairing {
   id: string;
   itemA: string;
   itemB: string;
-  matchScore: number;
   badge: string;
   secretLink: string;
   kitchenTip: string;

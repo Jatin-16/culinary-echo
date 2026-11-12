@@ -175,11 +175,9 @@ export const GastronomyEngine = {
 
     const tradeOffs: string[] = [];
     const steps: string[] = [];
-    let confidenceScore = 95;
 
     // 1. Evaluate missing ingredient impact & substitution trade-offs
     if (missingIngredients.length > 0) {
-      confidenceScore -= missingIngredients.length * 9;
       substitutions.forEach(sub => {
         tradeOffs.push(
           `Substituting ${sub.original} with "${sub.suggested}": ${sub.reason}`
@@ -187,13 +185,13 @@ export const GastronomyEngine = {
       });
     } else {
       tradeOffs.push(
-        "All original core ingredients preserved in your pantry; sensory baseline retained at ~95%."
+        "All listed original ingredients are available; no ingredient substitutions are required."
       );
     }
 
     // 2. Equipment Constraints
     if (equipment === 'no_smoker') {
-      confidenceScore -= 8;
+       
       tradeOffs.push(
         "No smoker or tandoor available: simulating smoky phenols using cast-iron dry spice charring."
       );
@@ -202,7 +200,7 @@ export const GastronomyEngine = {
       );
     } else if (equipment === 'dhungar') {
       // Dhungar actually enhances authentic woodsmoke volatiles!
-      confidenceScore += 1;
+       
       tradeOffs.push(
         "Dhungar Live Charcoal Infusion: Captures genuine tandoor woodsmoke phenols (guaiacol & syringol) directly into the ghee layer in 3 minutes."
       );
@@ -217,7 +215,6 @@ export const GastronomyEngine = {
         "Dum Pukht Sealed Pot: Seal rim with double-layered heavy foil or dough rope, clamp lid tightly, and place a flat iron skillet (tawa) beneath the pot over ultra-low flame for 20-25 minutes."
       );
     } else if (equipment === 'pressure_cooker') {
-      confidenceScore -= 4;
       tradeOffs.push(
         "Pressure Cooker / Instant Pot: High-pressure steam accelerates gelatin extraction and pulse softening in 1/3 the time."
       );
@@ -225,7 +222,6 @@ export const GastronomyEngine = {
         "Pressure Tenderization: Lock lid and cook under high pressure for 25 minutes. Allow natural pressure release so delicate terpene aromatics recondense into the liquid."
       );
     } else if (equipment === 'minimal') {
-      confidenceScore -= 12;
       tradeOffs.push(
         "Single-pan constraint: cooking operations condensed sequentially in one pan; emulsification requires active swirling."
       );
@@ -236,7 +232,6 @@ export const GastronomyEngine = {
 
     // 3. Time Constraints
     if (timeLimit === 'quick_30') {
-      confidenceScore -= 10;
       tradeOffs.push(
         "Under 30-minute rush: Accelerated simmer yields a lighter, fresher broth rather than deep gelatinous mouthfeel."
       );
@@ -244,7 +239,6 @@ export const GastronomyEngine = {
         "Surface Area Maximization: Finely grate rhizomes and slice aromatics thinly to multiply volatile diffusion rates in half the simmering time."
       );
     } else if (timeLimit === 'express_15') {
-      confidenceScore -= 22;
       tradeOffs.push(
         "15-minute express: Focuses strictly on high-impact volatile aromas rather than long-cooked umami compounds."
       );
@@ -281,11 +275,7 @@ export const GastronomyEngine = {
       "Resting & Evaluation: Rest for 4-5 minutes before serving so volatile aroma vapors stabilize at optimal tasting temperature (~60°C)."
     );
 
-    // Floor at 40%
-    confidenceScore = Math.max(40, Math.min(96, confidenceScore));
-
     return {
-      confidence: confidenceScore,
       targetGoal,
       substitutions,
       tradeOffs,
@@ -408,7 +398,6 @@ filterContributions(
       brightCitrus: number;
       earthy: number;
     };
-    harmonyScore: number;
     dominantBridge: string;
     sharedVolatilesFound: string[];
     funTwist: string;
@@ -474,11 +463,7 @@ filterContributions(
       .filter(([_, count]) => count >= 2)
       .map(([comp]) => comp);
 
-    // Calculate overall culinary harmony score
-    // Higher if there are shared volatiles, high sensory balance across acid/fat/spice
-    const rawHarmony = 68 + sharedVolatilesFound.length * 9;
-    const harmonyScore = Math.min(97, Math.max(65, rawHarmony));
-
+    
     // Determine dominant bridge name
     let dominantBridge = 'Harmonious Pantry Blend';
     if (sharedVolatilesFound.includes('Guaiacol')) {
@@ -509,7 +494,6 @@ filterContributions(
 
     return {
       dimensions,
-      harmonyScore,
       dominantBridge,
       sharedVolatilesFound,
       funTwist
@@ -524,7 +508,6 @@ filterContributions(
     id: string;
     itemA: string;
     itemB: string;
-    matchScore: number;
     badge: string;
     secretLink: string;
     kitchenTip: string;
@@ -535,7 +518,6 @@ filterContributions(
         id: 'sp_1',
         itemA: 'Dark Chocolate',
         itemB: 'Smoked Paprika',
-        matchScore: 89,
         badge: 'Savory & Smoky',
         secretLink: 'Both share roasted pyrazines and earthy phenolic notes.',
         kitchenTip: 'Melt a single square of 80% dark chocolate into slow-simmered smoky chili or black beans.',
@@ -545,7 +527,6 @@ filterContributions(
         id: 'sp_2',
         itemA: 'Cardamom',
         itemB: 'Coffee / Roasted Beans',
-        matchScore: 94,
         badge: 'Aromatic Spark',
         secretLink: 'Both contain cooling terpinyl & cineole volatiles that cut through roasted bitterness.',
         kitchenTip: 'Crack 2 green cardamom pods directly into your morning french press or cold-brew pitcher.',
@@ -555,7 +536,6 @@ filterContributions(
         id: 'sp_3',
         itemA: 'Tamarind',
         itemB: 'Mezcal / Peated Malt',
-        matchScore: 86,
         badge: 'Campfire Tartness',
         secretLink: 'Furfural in cooked tamarind creates a stunning bridge with guaiacol in roasted agave.',
         kitchenTip: 'Shake a teaspoon of warm tamarind paste with mezcal, lime juice, and a rim of toasted cumin salt.',
@@ -565,7 +545,6 @@ filterContributions(
         id: 'sp_4',
         itemA: 'Coconut Milk',
         itemB: 'Lemongrass',
-        matchScore: 92,
         badge: 'Velvety Citrus',
         secretLink: 'Rich lactone fats in coconut milk trap and gently amplify the volatile citral top-notes.',
         kitchenTip: 'Bruise fresh lemongrass stalks directly into simmering coconut milk for an instant soothing broth.',
@@ -575,7 +554,6 @@ filterContributions(
         id: 'sp_5',
         itemA: 'Clove',
         itemB: 'Ginger',
-        matchScore: 88,
         badge: 'Warm Fire & Zing',
         secretLink: 'Eugenol in clove and zingiberene in ginger fuse into an intoxicating warm-spiced register.',
         kitchenTip: 'Simmer crushed fresh ginger with two whole cloves in apple cider or black tea.',

@@ -180,7 +180,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               <span>{showBlueprint ? 'Hide Flavor Blueprint' : 'Interactive Flavor Blueprint'}</span>
             </span>
             <span className="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-amber-200 text-amber-900 font-bold">
-              {flavorBlueprint.harmonyScore}% Harmony
+              Explore Profile
             </span>
           </button>
 

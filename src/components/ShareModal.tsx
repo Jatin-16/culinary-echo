@@ -44,10 +44,12 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   const [changedNotes, setChangedNotes] = useState('');
   const [retainedNotes, setRetainedNotes] = useState('');
   const [showPrompts, setShowPrompts] = useState(false);
+  const [formError, setFormError] = useState('');
 
   // Prepopulate if spawned from recreation result
   useEffect(() => {
     if (!isOpen) return;
+    setFormError('');
     if (parentDish) {
       setTitle(`Variation: ${parentDish.title}`);
       setCategory('Community Variation');
@@ -99,19 +101,56 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return;
+    setFormError('');
 
-    const parsedIngredients = ingredientsText
-      ? ingredientsText.split(',').map(s => s.trim()).filter(Boolean)
-      : ['Aromatics', 'Pantry staples'];
+    // Validate title
+    const cleanTitle = title.trim();
 
-    const chosenImage = imageUrl.trim() || parentDish?.image || DEFAULT_PRESET_IMAGES[0];
+    if (!cleanTitle) {
+      setFormError('Please enter a dish or experience name.');
+      return;
+    }
+
+    // Validate image URL
+    const cleanImageUrl = imageUrl.trim();
+
+    if (cleanImageUrl) {
+      try {
+        const parsedUrl = new URL(cleanImageUrl);
+
+        if (
+          parsedUrl.protocol !== 'http:' &&
+          parsedUrl.protocol !== 'https:'
+        ) {
+          setFormError('Photo URL must start with http:// or https://.');
+          return;
+        }
+      } catch {
+        setFormError('Please enter a valid photo URL.');
+        return;
+      }
+    }
+
+    // Parse ingredients and remove duplicates
+    const parsedIngredients = [
+      ...new Map(
+        ingredientsText
+          .split(',')
+          .map(item => item.trim())
+          .filter(Boolean)
+          .map(item => [item.toLowerCase(), item])
+      ).values()
+    ];
+
+    const chosenImage =
+      cleanImageUrl || parentDish?.image || DEFAULT_PRESET_IMAGES[0];
+
     const chosenAuthor = author.trim() || 'You (Kitchen Explorer)';
 
     onSubmit({
       author: chosenAuthor,
       authorAvatar: chosenAuthor[0].toUpperCase(),
-      title: title.trim(),
+      title: cleanTitle,
       category: parentDish ? 'Community Variation' : category,
       story: story.trim() || 'A shared food memory and kitchen experiment.',
       image: chosenImage,
@@ -154,6 +193,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
         {/* Scrollable Form */}
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 overflow-y-auto text-xs sm:text-sm">
+          {formError && (
+            <div
+              role="alert"
+              className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium"
+            >
+              {formError}
+            </div>
+          )}
           {/* Lineage banner if variation */}
           {parentDish && (
             <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-950 flex items-start gap-2.5">
@@ -176,8 +223,13 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               <input
                 type="text"
                 required
+                minLength={2}
+                maxLength={100}
                 value={title}
-                onChange={e => setTitle(e.target.value)}
+                onChange={e => {
+                  setTitle(e.target.value);
+                  setFormError('');
+                }}
                 placeholder="e.g. Claypot Tamarind Rasam, Campfire Mole..."
                 className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-stone-50 border border-stone-200 focus:outline-none focus:ring-1 focus:ring-amber-900"
               />
@@ -336,6 +388,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             <input
               type="text"
               value={ingredientsText}
+              maxLength={500}
               onChange={e => setIngredientsText(e.target.value)}
               placeholder="e.g. Tamarind, Coconut Milk, Ginger, Cumin, Smoked Paprika"
               className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-stone-50 border border-stone-200 focus:outline-none focus:ring-1 focus:ring-amber-900"

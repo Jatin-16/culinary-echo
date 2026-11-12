@@ -117,9 +117,12 @@ describe('GastronomyEngine - Adaptive Recreation Pathway Solver', () => {
       'unlimited'
     );
 
-    expect(result.confidence).toBe(95);
     expect(result.substitutions.length).toBe(0);
-    expect(result.tradeOffs.some(t => t.includes('95%'))).toBe(true);
+    expect(
+      result.tradeOffs.some(t =>
+        t.includes('no ingredient substitutions')
+      )
+    ).toBe(true);
     expect(result.steps.length).toBeGreaterThan(0);
   });
 
@@ -132,8 +135,7 @@ describe('GastronomyEngine - Adaptive Recreation Pathway Solver', () => {
       'unlimited'
     );
 
-    // 95 - (2 * 9) = 77
-    expect(result.confidence).toBe(77);
+    
     expect(result.substitutions.length).toBe(2);
     expect(result.tradeOffs.some(t => t.includes('Lime Juice'))).toBe(true);
   });
@@ -147,7 +149,6 @@ describe('GastronomyEngine - Adaptive Recreation Pathway Solver', () => {
       'unlimited'
     );
 
-    expect(result.confidence).toBe(87); // 95 - 8
     expect(result.steps.some(s => s.toLowerCase().includes('skillet') || s.toLowerCase().includes('charring'))).toBe(true);
     expect(result.tradeOffs.some(t => t.toLowerCase().includes('char'))).toBe(true);
   });
@@ -161,7 +162,6 @@ describe('GastronomyEngine - Adaptive Recreation Pathway Solver', () => {
       'express_15'
     );
 
-    expect(result.confidence).toBe(73); // 95 - 22
     expect(result.steps.some(s => s.toLowerCase().includes('flash') || s.toLowerCase().includes('hot'))).toBe(true);
   });
 
@@ -173,18 +173,6 @@ describe('GastronomyEngine - Adaptive Recreation Pathway Solver', () => {
     expect(textureResult.steps.some(s => s.toLowerCase().includes('texture') || s.toLowerCase().includes('mouthfeel'))).toBe(true);
   });
 
-  it('enforces confidence score limits between 40 and 96', () => {
-    const result = GastronomyEngine.solveRecreationPathway(
-      sampleDish,
-      ['Coconut Milk', 'Tamarind', 'Ginger', 'Cumin', 'Item5', 'Item6', 'Item7', 'Item8'],
-      'whole',
-      'minimal',
-      'express_15'
-    );
-
-    expect(result.confidence).toBeGreaterThanOrEqual(40);
-    expect(result.confidence).toBeLessThanOrEqual(96);
-  });
 });
 
 describe('GastronomyEngine - Lineage Tree Constructor', () => {
@@ -346,25 +334,32 @@ describe('GastronomyEngine - Filter and Search', () => {
 });
 
 describe('GastronomyEngine - Computational Sensory Profiler & Secret Pairings', () => {
-  it('computes 6-dimension sensory profile and harmony score for a dish', () => {
-    const profile = GastronomyEngine.computeDishSensoryProfile(['Smoked Paprika', 'Dark Chocolate', 'Clove']);
-    expect(profile.harmonyScore).toBeGreaterThanOrEqual(65);
-    expect(profile.harmonyScore).toBeLessThanOrEqual(97);
+  it('computes sensory dimensions and ingredient connections for a dish', () => {
+    const profile = GastronomyEngine.computeDishSensoryProfile([
+      'Smoked Paprika',
+      'Dark Chocolate',
+      'Clove'
+    ]);
+
     expect(profile.dimensions.smoky).toBeGreaterThan(0);
     expect(profile.dimensions.earthy).toBeGreaterThan(0);
+    expect(profile.dominantBridge).toBeDefined();
+    expect(profile.sharedVolatilesFound).toBeDefined();
     expect(profile.funTwist).toBeDefined();
     expect(typeof profile.funTwist).toBe('string');
   });
 
-  it('provides curated scientific secret pairings with kitchen tips', () => {
+  it('provides curated ingredient pairings with explanations and kitchen tips', () => {
     const pairings = GastronomyEngine.getSecretPairings();
+
     expect(pairings.length).toBeGreaterThanOrEqual(4);
+
     pairings.forEach(p => {
       expect(p.itemA).toBeDefined();
       expect(p.itemB).toBeDefined();
-      expect(p.matchScore).toBeGreaterThan(80);
       expect(p.secretLink).toBeDefined();
       expect(p.kitchenTip).toBeDefined();
+      expect(p.cuisineCrossover).toBeDefined();
     });
   });
 });
