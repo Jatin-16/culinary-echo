@@ -52,14 +52,8 @@ export class ErrorBoundary extends Component<Props, State> {
           </h3>
 
           <p className="text-xs sm:text-sm text-stone-600 mt-2 max-w-md leading-relaxed">
-            We ran into an unexpected hiccup while preparing this view. Your saved recipes, pantry notes, and taste explorations remain safe.
-          </p>
+            We ran into an unexpected problem while preparing this view. Please try again. If the problem continues, reload the application.          </p>
 
-          {this.state.error && (
-            <div className="mt-4 p-3 bg-stone-50 rounded-xl border border-stone-200 text-[11px] font-mono text-stone-500 max-w-md overflow-x-auto text-left">
-              {this.state.error.message}
-            </div>
-          )}
 
           <div className="mt-6 flex items-center gap-3">
             <button

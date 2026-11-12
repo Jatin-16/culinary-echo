@@ -18,6 +18,16 @@ import {
 } from '../types';
 import { FLAVOR_DB, RECIPE_DB } from '../data/culinaryDatabase';
 
+const normalizeSearchText = (value: string): string => {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+};
+
+
 export const GastronomyEngine = {
   /**
    * Find ingredient profile from FlavorDB
@@ -309,51 +319,80 @@ export const GastronomyEngine = {
     return roots;
   },
 
-  /**
-   * Filter contributions by sensory attributes and keywords
-   */
-  filterContributions(
-    posts: LivingContribution[],
-    query: string = '',
-    sensoryTag: string | null = null
-  ): LivingContribution[] {
-    const q = query.toLowerCase().trim();
-    const tag = sensoryTag ? sensoryTag.toLowerCase().trim() : null;
+/**
+ * Search contributions by keywords and sensory attributes.
+ * Supports multi-word queries across different fields.
+ */
+filterContributions(
+  posts: LivingContribution[],
+  query: string = '',
+  sensoryTag: string | null = null
+): LivingContribution[] {
+  const normalizedQuery = normalizeSearchText(query);
+  const queryWords = normalizedQuery
+    ? normalizedQuery.split(/\s+/)
+    : [];
 
-    return posts.filter(post => {
-      // 1. Sensory Tag filter
-      if (tag) {
-        const matchesSensory =
-          post.sensory.aroma.toLowerCase().includes(tag) ||
-          post.sensory.taste.toLowerCase().includes(tag) ||
-          post.sensory.texture.toLowerCase().includes(tag) ||
-          (post.sensory.aftertaste && post.sensory.aftertaste.toLowerCase().includes(tag));
-        if (!matchesSensory) return false;
-      }
+  const normalizedTag = sensoryTag
+    ? normalizeSearchText(sensoryTag)
+    : '';
 
-      // 2. Query text filter
-      if (!q) return true;
+  return posts.filter(post => {
+    // 1. Sensory filter
+    if (normalizedTag) {
+      const sensoryText = normalizeSearchText([
+        post.sensory.aroma,
+        post.sensory.taste,
+        post.sensory.texture,
+        post.sensory.aftertaste || ''
+      ].join(' '));
 
-      const matchesTitle = post.title.toLowerCase().includes(q);
-      const matchesStory = post.story.toLowerCase().includes(q);
-      const matchesAuthor = post.author.toLowerCase().includes(q);
-      const matchesCategory = post.category.toLowerCase().includes(q);
-      const matchesIngredients = post.ingredients.some(ing => ing.toLowerCase().includes(q));
-      const matchesSensoryText =
-        post.sensory.aroma.toLowerCase().includes(q) ||
-        post.sensory.taste.toLowerCase().includes(q) ||
-        post.sensory.texture.toLowerCase().includes(q);
+      const tagWords = normalizedTag.split(/\s+/);
 
-      // Check if user queried a chemical compound present in FlavorDB
-      const compoundMatch = FLAVOR_DB.some(
-        f =>
-          f.compounds.some(c => c.toLowerCase().includes(q)) &&
-          post.ingredients.some(i => i.toLowerCase().includes(f.name.toLowerCase()))
+      const matchesSensory = tagWords.every(word =>
+        sensoryText.includes(word)
       );
 
-      return matchesTitle || matchesStory || matchesAuthor || matchesCategory || matchesIngredients || matchesSensoryText || compoundMatch;
-    });
-  },
+      if (!matchesSensory) return false;
+    }
+
+    // 2. Empty query: only apply sensory filtering
+    if (queryWords.length === 0) return true;
+
+    // 3. Build searchable content
+    const ingredientNames = post.ingredients || [];
+
+    const matchingFlavorIngredients = FLAVOR_DB.filter(flavor =>
+      ingredientNames.some(ingredient =>
+        normalizeSearchText(ingredient).includes(
+          normalizeSearchText(flavor.name)
+        )
+      )
+    );
+
+    const compoundNames = matchingFlavorIngredients.flatMap(
+      flavor => flavor.compounds
+    );
+
+    const searchableText = normalizeSearchText([
+      post.title,
+      post.story,
+      post.author,
+      post.category,
+      ...ingredientNames,
+      post.sensory.aroma,
+      post.sensory.taste,
+      post.sensory.texture,
+      post.sensory.aftertaste || '',
+      ...compoundNames
+    ].join(' '));
+
+    // Every word must appear somewhere in the contribution
+    return queryWords.every(word =>
+      searchableText.includes(word)
+    );
+  });
+},
 
   /**
    * Interactive Flavor Harmony Compass

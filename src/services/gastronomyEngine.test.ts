@@ -261,7 +261,12 @@ describe('GastronomyEngine - Filter and Search', () => {
       story: 'Smoky neem leaves and monsoon memories',
       image: 'img1.jpg',
       ingredients: ['Tamarind', 'Cumin'],
-      sensory: { aroma: 'Smoky, Tart', taste: 'Tangy Heat', texture: 'Velvety' },
+      sensory: {
+        aroma: 'Smoky, Tart',
+        taste: 'Tangy Heat',
+        texture: 'Velvety',
+        aftertaste: 'Lingering Sourness'
+      },
       parentId: null,
       variationType: 'Root',
       likes: 12,
@@ -297,6 +302,47 @@ describe('GastronomyEngine - Filter and Search', () => {
     const guaiacolMatches = GastronomyEngine.filterContributions(samplePosts, 'guaiacol');
     expect(guaiacolMatches.some(p => p.id === 'p2')).toBe(true);
   });
+
+  it('searches multiple words across different fields', () => {
+    const results = GastronomyEngine.filterContributions(
+      samplePosts,
+      'Ananya smoky'
+    );
+
+    expect(results.length).toBe(1);
+    expect(results[0].id).toBe('p1');
+  });
+
+  it('searches ingredients without case sensitivity', () => {
+    const results = GastronomyEngine.filterContributions(
+      samplePosts,
+      'TAMARIND'
+    );
+
+    expect(results.some(p => p.id === 'p1')).toBe(true);
+  });
+
+  it('searches contribution aftertaste', () => {
+    const results = GastronomyEngine.filterContributions(
+      samplePosts,
+      'Lingering Sourness'
+    );
+
+    expect(results.some(p => p.id === 'p1')).toBe(true);
+  });
+
+  it('combines text search with sensory filters', () => {
+    const results = GastronomyEngine.filterContributions(
+      samplePosts,
+      'Tamarind',
+      'Tart'
+    );
+
+    expect(results.length).toBe(1);
+    expect(results[0].id).toBe('p1');
+  });
+
+
 });
 
 describe('GastronomyEngine - Computational Sensory Profiler & Secret Pairings', () => {

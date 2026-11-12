@@ -188,44 +188,73 @@ export const KitchenPantryFinder: React.FC<KitchenPantryFinderProps> = ({
       </div>
 
       {/* Interactive Ingredient Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-        {filteredItems.map(item => {
-          const isSelected = selectedItems.has(item.name);
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onToggleItem(item.name)}
-              className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[72px] relative group ${
-                isSelected
-                  ? 'border-emerald-600 bg-emerald-50/80 text-emerald-950 shadow-2xs'
-                  : 'border-stone-200 hover:border-amber-700/60 bg-white hover:bg-amber-50/20 text-stone-800'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-1 w-full">
-                <span className="font-semibold text-xs leading-snug line-clamp-2">
-                  {item.name}
-                </span>
-                <span
-                  className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 mt-0.5 transition-colors ${
-                    isSelected
-                      ? 'bg-emerald-600 text-white font-bold'
-                      : 'border border-stone-300 text-stone-300 group-hover:border-stone-400'
-                  }`}
-                >
-                  {isSelected ? '✓' : '+'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-[11px] text-stone-500 mt-1">
-                <span className="font-medium text-amber-900/80">{item.hindiName}</span>
-                <span className="text-[10px] text-stone-400 truncate max-w-[80px]">
-                  {item.flavorNotes.split(',')[0]}
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      {filteredItems.length === 0 ? (
+        <div className="col-span-full p-8 bg-white rounded-2xl border border-stone-200 text-center space-y-3">
+          <Search className="w-8 h-8 text-stone-300 mx-auto" />
+
+          <h3 className="text-sm font-semibold text-stone-800">
+            No ingredients found
+          </h3>
+
+          <p className="text-xs text-stone-500 max-w-sm mx-auto">
+            We couldn't find any ingredients matching "{searchQuery}".
+            Try another ingredient name or search in Hindi.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => setSearchQuery('')}
+            className="px-4 py-2 bg-stone-900 text-white text-xs font-semibold rounded-xl hover:bg-stone-800 transition-colors"
+          >
+            Clear search
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+          {filteredItems.map(item => {
+            const isSelected = selectedItems.has(item.name);
+
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => onToggleItem(item.name)}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between min-h-[72px] relative group ${
+                  isSelected
+                    ? 'border-emerald-600 bg-emerald-50/80 text-emerald-950 shadow-2xs'
+                    : 'border-stone-200 hover:border-amber-700/60 bg-white hover:bg-amber-50/20 text-stone-800'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-1 w-full">
+                  <span className="font-semibold text-xs leading-snug line-clamp-2">
+                    {item.name}
+                  </span>
+
+                  <span
+                    className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] shrink-0 mt-0.5 transition-colors ${
+                      isSelected
+                        ? 'bg-emerald-600 text-white font-bold'
+                        : 'border border-stone-300 text-stone-300 group-hover:border-stone-400'
+                    }`}
+                  >
+                    {isSelected ? '✓' : '+'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-stone-500 mt-1">
+                  <span className="font-medium text-amber-900/80">
+                    {item.hindiName}
+                  </span>
+
+                  <span className="text-[10px] text-stone-400 truncate max-w-[80px]">
+                    {item.flavorNotes.split(',')[0]}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Selected Items Counter Bar */}
       <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">

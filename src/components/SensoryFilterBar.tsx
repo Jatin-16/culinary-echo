@@ -43,7 +43,8 @@ export const SensoryFilterBar: React.FC<SensoryFilterBarProps> = ({
             type="text"
             value={searchQuery}
             onChange={e => onSearchChange(e.target.value)}
-            placeholder="Search by dish, ingredient or taste (e.g. Aloo, Dal, Paneer, Biryani, smoky)..."
+            placeholder="Search dishes, ingredients, people, stories or tastes..."
+            aria-label="Search culinary contributions"
             className="w-full pl-9 pr-9 py-2 text-xs sm:text-sm bg-stone-50 hover:bg-stone-100/70 focus:bg-white border border-stone-200 focus:border-stone-400 rounded-xl focus:outline-none focus:ring-1 focus:ring-stone-400 transition-colors placeholder:text-stone-400"
           />
           {searchQuery && (
